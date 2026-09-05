@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintSafe — Dashboard</title>
+<style>
+:root {
+  --bg: #F4F1EA;
+  --paper: #FFFDF7;
+  --text: #252525;
+  --text-soft: #6B6861;
+  --border: #D9D4C9;
+  --blue: #356AE6;
+  --blue-dark: #244FAE;
+  --success: #3F7D58;
+  --danger: #B94A48;
+  --white: #FFFFFF;
+  --black: #171717;
+  --radius: 10px;
+  --ease: 200ms ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(244, 241, 234, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--ease), box-shadow var(--ease), background var(--ease), border-color var(--ease);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--blue-dark);
+  box-shadow: 0 4px 14px rgba(53, 106, 230, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--paper);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-secondary:hover {
+  border-color: var(--text-soft);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+.btn-danger:hover {
+  background: #a13d3a;
+  transform: translateY(-1px);
+}
+
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #2d6a44; transform: translateY(-1px); }
+
+/* Main Layout */
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-header h1 {
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.section-header p {
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+/* Upload Area */
+.upload-area {
+  background: var(--paper);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px 32px;
+  text-align: center;
+  transition: border-color var(--ease), background var(--ease);
+  cursor: pointer;
+  margin-bottom: 32px;
+}
+
+.upload-area:hover {
+  border-color: var(--blue);
+  background: rgba(53, 106, 230, 0.02);
+}
+
+.upload-area.dragover {
+  border-color: var(--blue);
+  background: rgba(53, 106, 230, 0.06);
+}
+
+.upload-area svg {
+  width: 48px;
+  height: 48px;
+  color: var(--text-soft);
+  margin-bottom: 12px;
+}
+
+.upload-area h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.upload-area p {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.upload-area .file-input {
+  display: none;
+}
+
+/* Document Grid */
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.doc-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: transform var(--ease), box-shadow var(--ease);
+  cursor: pointer;
+}
+
+.doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,37,37,0.08);
+}
+
+.doc-card .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(53, 106, 230, 0.08);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.doc-card .icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.doc-card h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.doc-card .meta {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 12px;
+}
+
+.doc-card .actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-card .actions .btn {
+  font-size: 11px;
+  padding: 6px 14px;
+}
+
+.doc-card .active-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--success);
+  background: rgba(63, 125, 88, 0.1);
+  padding: 2px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23, 23, 23, 0.45);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal {
+  background: var(--paper);
+  border-radius: 14px;
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 26px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.modal p {
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal .btn {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 12.5px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-soft);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: var(--border);
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+/* Toast */
+.toast-wrap {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.toast {
+  background: var(--black);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  animation: toast-in 220ms ease;
+}
+
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.warning { background: #C98A2A; }
+
+.toast svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .section-header { flex-direction: column; align-items: flex-start; }
+  .section-header h1 { font-size: 22px; }
+  .doc-grid { grid-template-columns: 1fr; }
+  .upload-area { padding: 32px 20px; }
+  header { padding: 0 16px; }
+  .nav { height: 60px; }
+  main { padding: 20px 16px 40px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a href="dashboard.html" class="logo">
+      <span class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg>
+      </span>
+      PrintSafe
+    </a>
+    <div class="nav-actions">
+      <span style="font-size:13px;color:var(--text-soft);">👤 Demo Mode</span>
+      <button class="btn btn-secondary btn-sm" id="clearDataBtn">Clear All</button>
+      <a href="index.html" class="btn btn-secondary btn-sm">Home</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="section-header">
+    <div>
+      <h1>Your Documents</h1>
+      <p>Upload PDFs and create temporary print links</p>
+    </div>
+    <button class="btn btn-primary" id="uploadBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload PDF
+    </button>
+  </div>
+
+  <!-- Upload Area -->
+  <div class="upload-area" id="dropZone">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <h3>Drag & drop your PDF here</h3>
+    <p>or click to browse — max 20MB</p>
+    <input type="file" class="file-input" id="fileInput" accept=".pdf" />
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState" style="text-align:center;padding:40px;display:none;">
+    <div class="loading-spinner"></div>
+    <p style="margin-top:12px;color:var(--text-soft);">Loading documents...</p>
+  </div>
+
+  <!-- Document Grid -->
+  <div class="doc-grid" id="docGrid"></div>
+
+  <!-- Empty State -->
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg>
+    <h3>No documents yet</h3>
+    <p>Upload your first PDF to get started.</p>
+  </div>
+</main>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Delete this document?</h3>
+    <p>This will permanently remove the document and all associated print links.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+      <button class="btn btn-danger" id="confirmDelete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ==================== CONFIGURATION ====================
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : '/api';
+
+// ==================== HELPERS ====================
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function showToast(message, type = 'default') {
+  const wrap = $('#toastWrap');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+    : type === 'error'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>'
+    : type === 'warning'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'
+    : '';
+  toast.innerHTML = `${icon}<span>${message}</span>`;
+  wrap.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity 200ms ease';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 200);
+  }, 3000);
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function formatDate(isoString) {
+  if (!isoString) return '';
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ==================== STATE ====================
+let documents = [];
+let deleteTargetId = null;
+let isLoading = false;
+
+// ==================== API CLIENT ====================
+async function apiFetch(endpoint, options = {}) {
+  try {
+    const url = `${API_URL}${endpoint}`;
+    console.log(`📡 API Request: ${options.method || 'GET'} ${url}`);
+    
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'API request failed';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || errorMessage;
+      } catch (e) {
+        errorMessage = `Server error (${response.status})`;
+      }
+      throw new Error(errorMessage);
+    }
+    
+    // Check if response has content
+    const contentLength = response.headers.get('content-length');
+    if (contentLength === '0') {
+      return null;
+    }
+    
+    return response.json();
+  } catch (error) {
+    if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
+      throw new Error('Cannot connect to server. Make sure the Flask server is running on http://localhost:5000');
+    }
+    throw error;
+  }
+}
+
+// ==================== LOAD DOCUMENTS ====================
+async function loadDocuments() {
+  if (isLoading) return;
+  
+  isLoading = true;
+  const grid = $('#docGrid');
+  const empty = $('#emptyState');
+  const loading = $('#loadingState');
+  
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+  loading.style.display = 'block';
+
+  try {
+    const docs = await apiFetch('/documents');
+    documents = docs || [];
+    renderDocuments();
+  } catch (error) {
+    console.error('Load error:', error);
+    showToast('Failed to load documents: ' + error.message, 'error');
+    // Show empty state with error message
+    empty.style.display = 'block';
+    empty.querySelector('p').textContent = 'Failed to load documents. Make sure the server is running.';
+  } finally {
+    isLoading = false;
+    loading.style.display = 'none';
+  }
+}
+
+// ==================== RENDER DOCUMENTS ====================
+function renderDocuments() {
+  const grid = $('#docGrid');
+  const empty = $('#emptyState');
+
+  if (!documents || documents.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('p').textContent = 'Upload your first PDF to get started.';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.innerHTML = documents.map(doc => `
+    <div class="doc-card" data-id="${doc.id}">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg>
+      </div>
+      <h3>${escapeHtml(doc.name)}</h3>
+      <div class="meta">${formatSize(doc.size)} · Uploaded ${formatDate(doc.upload_date)}</div>
+      <div class="actions">
+        <button class="btn btn-primary btn-sm share-btn" data-id="${doc.id}">🔗 Share</button>
+        <button class="btn btn-danger btn-sm delete-btn" data-id="${doc.id}">🗑️ Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Attach event listeners
+  grid.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      localStorage.setItem('printsafe_activeDocId', id);
+      window.location.href = 'share.html';
+    });
+  });
+
+  grid.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteTargetId = btn.dataset.id;
+      $('#deleteModal').classList.add('open');
+    });
+  });
+
+  grid.querySelectorAll('.doc-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      localStorage.setItem('printsafe_activeDocId', id);
+      window.location.href = 'share.html';
+    });
+  });
+}
+
+// ==================== UPLOAD DOCUMENT ====================
+async function uploadDocument(file) {
+  if (!file) return;
+  
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
+    showToast('Only PDF files are allowed.', 'error');
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('File size exceeds 20MB limit.', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    showToast('Uploading...', 'default');
+    
+    const response = await fetch(`${API_URL}/documents`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Upload failed';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || errorMessage;
+      } catch (e) {}
+      throw new Error(errorMessage);
+    }
+
+    const doc = await response.json();
+    showToast(`✅ "${file.name}" uploaded successfully.`, 'success');
+    await loadDocuments();
+  } catch (error) {
+    console.error('Upload error:', error);
+    showToast('Upload failed: ' + error.message, 'error');
+  }
+}
+
+// ==================== DELETE DOCUMENT ====================
+async function deleteDocument(docId) {
+  try {
+    const result = await apiFetch(`/documents/${docId}`, { method: 'DELETE' });
+    showToast('Document deleted successfully.', 'success');
+    await loadDocuments();
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('Delete failed: ' + error.message, 'error');
+  }
+}
+
+// ==================== CLEAR ALL DATA ====================
+async function clearAllData() {
+  if (!documents || documents.length === 0) {
+    showToast('No documents to clear.', 'warning');
+    return;
+  }
+  
+  if (!confirm('Delete all documents? This cannot be undone.')) return;
+  
+  try {
+    let deleted = 0;
+    for (const doc of documents) {
+      try {
+        await apiFetch(`/documents/${doc.id}`, { method: 'DELETE' });
+        deleted++;
+      } catch (e) {
+        console.error(`Failed to delete ${doc.id}:`, e);
+      }
+    }
+    showToast(`✅ Deleted ${deleted} documents.`, 'success');
+    await loadDocuments();
+  } catch (error) {
+    console.error('Clear data error:', error);
+    showToast('Failed to clear data: ' + error.message, 'error');
+  }
+}
+
+// ==================== EVENT LISTENERS ====================
+
+// Upload button
+$('#uploadBtn').addEventListener('click', () => {
+  $('#fileInput').click();
+});
+
+// File input
+$('#fileInput').addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    uploadDocument(e.target.files[0]);
+    e.target.value = '';
+  }
+});
+
+// Drag and drop
+const dropZone = $('#dropZone');
+['dragenter', 'dragover'].forEach(event => {
+  dropZone.addEventListener(event, (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+});
+
+['dragleave', 'drop'].forEach(event => {
+  dropZone.addEventListener(event, (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+  });
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    uploadDocument(files[0]);
+  }
+});
+
+dropZone.addEventListener('click', () => {
+  $('#fileInput').click();
+});
+
+// Delete modal
+$('#cancelDelete').addEventListener('click', () => {
+  $('#deleteModal').classList.remove('open');
+  deleteTargetId = null;
+});
+
+$('#deleteModal').addEventListener('click', (e) => {
+  if (e.target === $('#deleteModal')) {
+    $('#deleteModal').classList.remove('open');
+    deleteTargetId = null;
+  }
+});
+
+$('#confirmDelete').addEventListener('click', async () => {
+  if (deleteTargetId) {
+    await deleteDocument(deleteTargetId);
+    $('#deleteModal').classList.remove('open');
+    deleteTargetId = null;
+  }
+});
+
+// Clear data
+$('#clearDataBtn').addEventListener('click', clearAllData);
+
+// ==================== CHECK SERVER STATUS ====================
+async function checkServerStatus() {
+  try {
+    const response = await fetch(`${API_URL}/health`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Server status:', data.status, 'Mode:', data.mode || 'demo');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.warn('⚠️ Server not reachable:', error.message);
+    showToast('⚠️ Server not reachable. Make sure Flask is running.', 'warning');
+    return false;
+  }
+}
+
+// ==================== INIT ====================
+(async function init() {
+  console.log('📄 PrintSafe Dashboard');
+  
+  // Check server
+  const serverOk = await checkServerStatus();
+  if (!serverOk) {
+    showToast('⚠️ Cannot connect to server. Make sure Flask is running on port 5000.', 'warning');
+  }
+  
+  // Load documents
+  await loadDocuments();
+  
+  // Auto-refresh every 30 seconds
+  setInterval(loadDocuments, 30000);
+})();
+</script>
+</body>
+</html>

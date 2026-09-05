@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintSafe — Upload. Share. Print. Forget.</title>
+<style>
+  :root {
+    --bg: #F4F1EA;
+    --paper: #FFFDF7;
+    --text: #252525;
+    --text-soft: #6B6861;
+    --border: #D9D4C9;
+    --blue: #356AE6;
+    --blue-dark: #244FAE;
+    --success: #3F7D58;
+    --danger: #B94A48;
+    --white: #FFFFFF;
+    --black: #171717;
+    --radius: 10px;
+    --ease: 200ms ease;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(244, 241, 234, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    color: var(--text-soft);
+    transition: color var(--ease);
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 11px 22px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform var(--ease), box-shadow var(--ease), background var(--ease), border-color var(--ease);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: var(--blue-dark);
+    box-shadow: 0 4px 14px rgba(53, 106, 230, 0.28);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--text-soft);
+    transform: translateY(-1px);
+  }
+  .btn-sm { padding: 9px 16px; font-size: 12.5px; }
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+  .btn-success:hover {
+    background: #2d6a44;
+    transform: translateY(-1px);
+  }
+
+  /* Hero */
+  .hero {
+    padding: 88px 0 96px;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items: center;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blue-dark);
+    background: rgba(53, 106, 230, 0.08);
+    border: 1px solid rgba(53, 106, 230, 0.18);
+    padding: 6px 12px;
+    border-radius: 100px;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--blue);
+  }
+
+  h1 {
+    font-size: 52px;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    margin: 0 0 22px;
+    font-weight: 700;
+  }
+
+  .hero p.sub {
+    font-size: 18px;
+    color: var(--text-soft);
+    max-width: 460px;
+    margin: 0 0 34px;
+  }
+
+  .hero-actions { display: flex; gap: 14px; margin-bottom: 40px; flex-wrap: wrap; }
+
+  .hero-meta {
+    display: flex;
+    gap: 28px;
+    font-size: 13px;
+    color: var(--text-soft);
+    flex-wrap: wrap;
+  }
+  .hero-meta div { display: flex; align-items: center; gap: 7px; }
+  .hero-meta svg { width: 15px; height: 15px; color: var(--success); flex-shrink: 0; }
+
+  /* Reader mockup */
+  .reader-mock {
+    position: relative;
+    background: var(--paper);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 60px -20px rgba(37, 37, 37, 0.18), 0 2px 8px rgba(37,37,37,0.04);
+    padding: 28px 30px 32px;
+    max-width: 440px;
+    margin-left: auto;
+  }
+  .reader-mock-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    color: var(--text-soft);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .reader-mock-title {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    margin: 0 0 6px;
+    color: var(--black);
+  }
+  .reader-mock-body {
+    font-family: Georgia, serif;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: #3a3a3a;
+  }
+  .reader-mock-body p { margin: 0 0 14px; }
+  .reader-mock-body .fade {
+    background: linear-gradient(180deg, #3a3a3a 0%, transparent 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .reader-mock-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-soft);
+  }
+  .reader-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(185, 74, 72, 0.08);
+    color: var(--danger);
+    padding: 5px 10px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .reader-timer svg { width: 12px; height: 12px; }
+
+  .floating-badge {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(37,37,37,0.12);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .floating-badge.top {
+    top: -18px;
+    right: 24px;
+    color: var(--success);
+  }
+  .floating-badge.top svg { width: 14px; height: 14px; }
+  .floating-badge.bottom {
+    bottom: -18px;
+    left: -18px;
+    color: var(--blue-dark);
+  }
+
+  /* Sections shared */
+  section { padding: 88px 0; }
+  .section-head { max-width: 620px; margin: 0 0 52px; }
+  .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+  .section-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue-dark);
+    margin: 0 0 12px;
+  }
+  h2 {
+    font-size: 34px;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+  .section-head p {
+    color: var(--text-soft);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  /* How it works */
+  .how-it-works { border-top: 1px solid var(--border); }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    counter-reset: step;
+  }
+  .step {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 22px;
+    position: relative;
+  }
+  .step-num {
+    font-family: Georgia, serif;
+    font-size: 34px;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 18px;
+  }
+  .step h3 {
+    font-size: 15.5px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .step p {
+    font-size: 13.5px;
+    color: var(--text-soft);
+    margin: 0;
+    line-height: 1.6;
+  }
+  .step-arrow {
+    position: absolute;
+    top: 34px;
+    right: -30px;
+    color: var(--border);
+    z-index: 2;
+  }
+  .step:last-child .step-arrow { display: none; }
+
+  /* Security features */
+  .features { background: var(--paper); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .feature {
+    background: var(--paper);
+    padding: 30px 26px;
+  }
+  .feature-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: rgba(53, 106, 230, 0.08);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .feature-icon svg { width: 19px; height: 19px; }
+  .feature h3 { font-size: 15.5px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .feature p { font-size: 13.5px; color: var(--text-soft); margin: 0; line-height: 1.65; }
+
+  /* Stats banner */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .stat {
+    background: var(--paper);
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-soft);
+    margin-top: 4px;
+  }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+  }
+  .cta-card {
+    background: var(--black);
+    border-radius: 18px;
+    padding: 64px 40px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(53,106,230,0.35), transparent 60%);
+  }
+  .cta-card > * { position: relative; }
+  .cta-card h2 { color: white; }
+  .cta-card p { color: #C7C4BC; max-width: 480px; margin: 0 auto 30px; font-size: 16px; }
+  .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta-card .btn-secondary {
+    background: transparent;
+    color: white;
+    border-color: rgba(255,255,255,0.25);
+  }
+  .cta-card .btn-secondary:hover { border-color: rgba(255,255,255,0.5); }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+  }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-row .logo { font-size: 15px; }
+  .footer-note {
+    font-size: 12.5px;
+    color: var(--text-soft);
+  }
+  .footer-links { display: flex; gap: 22px; font-size: 13px; color: var(--text-soft); }
+  .footer-links a:hover { color: var(--text); }
+
+  /* Mobile menu */
+  .menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+  .menu-btn svg { width: 22px; height: 22px; }
+  .mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .mobile-menu a {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .mobile-menu a:hover { background: rgba(53,106,230,0.06); }
+  .mobile-menu .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .mobile-menu.open { display: flex; }
+
+  /* Toast */
+  .toast-wrap {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .toast {
+    background: var(--black);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    animation: toast-in 220ms ease;
+  }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; padding: 48px 0 64px; gap: 40px; }
+    .reader-mock { margin: 0 auto; max-width: 380px; }
+    h1 { font-size: 38px; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .step-arrow { display: none; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .menu-btn { display: block; }
+    section { padding: 56px 0; }
+    .cta-actions { flex-direction: column; }
+    .cta-card { padding: 44px 22px; }
+    .stats { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .steps { grid-template-columns: 1fr; }
+    .hero-actions { flex-direction: column; }
+    .hero-actions .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg>
+      </span>
+      PrintSafe
+    </a>
+    <nav class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#how-it-works">How it works</a>
+    <a href="#features">Features</a>
+    <a href="dashboard.html" class="btn btn-primary">Get Started</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero" style="padding:0; display:contents;">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span> No account needed</div>
+        <h1>Upload. Share. Print. <span style="color:var(--blue);">Forget.</span></h1>
+        <p class="sub">A simple way to send documents to a print shop without handing over your original file. Everything is temporary.</p>
+        <div class="hero-actions">
+          <a href="dashboard.html" class="btn btn-primary">Start Printing →</a>
+          <a href="#how-it-works" class="btn btn-secondary">Learn More</a>
+        </div>
+        <div class="hero-meta">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Time-limited links</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 6-digit print codes</div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Auto-delete after download</div>
+        </div>
+      </div>
+      <div>
+        <div class="reader-mock">
+          <div class="floating-badge top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Link active</div>
+          <div class="reader-mock-bar"><span>Print Session</span><span>Page 1 of 4</span></div>
+          <h3 class="reader-mock-title">Quarterly Report — Draft</h3>
+          <div class="reader-mock-body">
+            <p>This document has been shared through a temporary print session. It is available to view and print only until the countdown below reaches zero.</p>
+            <p class="fade">Once the session expires, the print shop can no longer open, copy, or reprint this file...</p>
+          </div>
+          <div class="reader-mock-footer">
+            <span>A4 · 214 KB</span>
+            <span class="reader-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> 09:41</span>
+          </div>
+          <div class="floating-badge bottom"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><rect x="6" y="14" width="12" height="8"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg> Sent to Xerox Shop</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how-it-works">
+    <div class="wrap">
+      <div class="section-head center">
+        <p class="section-label">How it works</p>
+        <h2>Four steps, no file ever left behind</h2>
+        <p>PrintSafe keeps everything secure — no account needed, no permanent storage.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Upload your document</h3>
+          <p>Drop in a PDF from your device. It stays in your session.</p>
+          <span class="step-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Create a print link</h3>
+          <p>Generate a temporary link and a 6-digit code with a set expiry.</p>
+          <span class="step-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Share with the shop</h3>
+          <p>Show the code or link at the counter — no account needed on their end.</p>
+          <span class="step-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h3>Print, then forget</h3>
+          <p>The session expires automatically — the link stops working after.</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Temporary — nothing stored forever</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">5s</div>
+          <div class="stat-label">Auto-delete after download</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">Free</div>
+          <div class="stat-label">No account required</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="section-label">Built with intent</p>
+        <h2>Designed around a single trip to the print shop</h2>
+        <p>Every part of the interface exists to make a short-lived print session feel calm and controlled.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Expiring by design</h3>
+          <p>Choose 1, 5, 10 or 30 minutes. The link and code both stop working the moment the timer hits zero.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <h3>Nothing to hand over</h3>
+          <p>Share a code, not your original file. Revoke a session instantly if you change your mind.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg></div>
+          <h3>Reads like a book</h3>
+          <p>A calm, paper-like preview so it's easy to confirm you're printing the right pages.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <div class="cta-card">
+        <h2>Ready to print your first document?</h2>
+        <p>Upload a PDF, generate a temporary print link, and share it with your print shop — all in under a minute.</p>
+        <div class="cta-actions">
+          <a href="dashboard.html" class="btn btn-primary">Start Now →</a>
+          <a href="#how-it-works" class="btn btn-secondary">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <a href="index.html" class="logo">
+      <span class="logo-mark" style="width:24px;height:24px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M15 2v5h5"/></svg>
+      </span>
+      PrintSafe
+    </a>
+    <div class="footer-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+    </div>
+    <p class="footer-note">Made for quick, secure print sessions.</p>
+  </div>
+</footer>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ==================== HELPERS ====================
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function showToast(message, type = 'default') {
+  const wrap = $('#toastWrap');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+    : type === 'error'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>'
+    : '';
+  toast.innerHTML = `${icon}<span>${message}</span>`;
+  wrap.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity 200ms ease';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 200);
+  }, 3000);
+}
+
+// ==================== MOBILE MENU ====================
+const menuBtn = $('#menuBtn');
+const mobileMenu = $('#mobileMenu');
+
+menuBtn.addEventListener('click', () => {
+  mobileMenu.classList.toggle('open');
+  menuBtn.setAttribute('aria-label', mobileMenu.classList.contains('open') ? 'Close menu' : 'Open menu');
+});
+
+// Close mobile menu on link click
+mobileMenu.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    mobileMenu.classList.remove('open');
+  });
+});
+
+// Close on escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && mobileMenu.classList.contains('open')) {
+    mobileMenu.classList.remove('open');
+  }
+});
+
+// ==================== SERVER STATUS CHECK ====================
+async function checkServerStatus() {
+  try {
+    const response = await fetch('/api/health');
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Server status:', data.status);
+      return true;
+    }
+    return false;
+  } catch {
+    console.warn('⚠️ Server not reachable. Make sure Flask is running.');
+    return false;
+  }
+}
+
+// Check server status on load
+checkServerStatus();
+
+// ==================== SMOOTH SCROLL ====================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (href === '#') return;
+    e.preventDefault();
+    const target = document.querySelector(href);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ==================== ANIMATED COUNTER (Optional) ====================
+// Simple intersection observer for stats animation
+if ('IntersectionObserver' in window) {
+  const stats = document.querySelectorAll('.stat-number');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.5 });
+
+  stats.forEach(stat => {
+    stat.style.opacity = '0';
+    stat.style.transform = 'translateY(10px)';
+    stat.style.transition = 'opacity 600ms ease, transform 600ms ease';
+    observer.observe(stat);
+  });
+}
+
+console.log('📄 PrintSafe — Upload. Share. Print. Forget.');
+console.log('🚀 Visit /dashboard.html to get started');
+</script>
+</body>
+</html>

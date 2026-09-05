@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: printsafe-backend
+    runtime: python
+    repo: https://github.com/yourusername/printsafe
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FIREBASE_CONFIG
+        sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: DEFAULT_USER_EMAIL
+        value: demo@printsafe.com
+      - key: PDF_WATCHER_RUNNING
+        value: false
+      - key: FLASK_DEBUG
+        value: false
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app

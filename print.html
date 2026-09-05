@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>PrintSafe · secure session</title>
+  <style>
+    /* [Previous CSS styles - keep the same] */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+    :root {
+      --bg: #F2EFE9;
+      --paper: #FFFFFF;
+      --text: #1E1E1E;
+      --soft: #5F5C56;
+      --border: #D6D0C4;
+      --blue: #2B5FDD;
+      --blue-dark: #1C4599;
+      --success: #2E6B47;
+      --danger: #B13E3B;
+      --radius: 12px;
+      --shadow: 0 12px 30px rgba(0,0,0,0.06);
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(242, 239, 233, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+    .logo-mark svg { width: 16px; height: 16px; }
+    .session-badge {
+      font-size: 11px;
+      color: var(--soft);
+      background: rgba(0,0,0,0.03);
+      padding: 4px 12px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+    }
+    .timer {
+      background: rgba(46, 107, 71, 0.08);
+      color: var(--success);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 5px 16px;
+      border-radius: 40px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .timer.warning {
+      background: rgba(177, 62, 59, 0.08);
+      color: var(--danger);
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 24px 30px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status {
+      display: none;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .status.show { display: flex; }
+    .status-box {
+      max-width: 420px;
+      background: var(--paper);
+      padding: 40px 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .status-box h2 {
+      font-weight: 700;
+      font-size: 22px;
+      margin: 0 0 10px;
+    }
+    .status-box p {
+      color: var(--soft);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    #liveContent {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+    }
+    #liveContent.show { display: flex; }
+
+    .info-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding: 6px 4px 14px 4px;
+      font-size: 13px;
+      color: var(--soft);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .info-bar strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .info-bar .sep { opacity: 0.3; margin: 0 4px; }
+    .info-bar .doc-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+    }
+
+    .viewer-wrapper {
+      flex: 1;
+      min-height: 480px;
+      background: #faf8f5;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .viewer-wrapper iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    .viewer-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--soft);
+      background: #f9f7f3;
+      text-align: center;
+      padding: 30px;
+    }
+    .viewer-placeholder svg {
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+    .viewer-placeholder strong {
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      gap: 12px;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 560px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 14px 28px;
+      border-radius: 40px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-family: inherit;
+      background: var(--paper);
+      color: var(--text);
+      border-color: var(--border);
+      flex: 1;
+      min-width: 140px;
+      letter-spacing: 0.01em;
+    }
+    .btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+    .btn-primary:hover {
+      background: var(--blue-dark);
+      border-color: var(--blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(43, 95, 221, 0.25);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(0,0,0,0.02);
+      border-color: #b0a99b;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--soft);
+      text-align: center;
+    }
+    .notice {
+      font-size: 12px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 8px 20px;
+      color: var(--soft);
+      text-align: center;
+      max-width: 560px;
+    }
+
+    .toast-print {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      background: #1E1E1E;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+      max-width: 90vw;
+      text-align: center;
+      animation: toastIn 240ms ease;
+      font-family: Inter, system-ui, sans-serif;
+      backdrop-filter: blur(4px);
+    }
+    .toast-print.success { background: var(--success); }
+    .toast-print.error { background: var(--danger); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(-50%) translateY(0); }
+      to { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+    }
+
+    @media (max-width: 700px) {
+      header { padding: 0 16px; height: 56px; }
+      .logo { font-size: 14px; }
+      .logo-mark { width: 24px; height: 24px; }
+      .session-badge { display: none; }
+      .timer { font-size: 12px; padding: 4px 12px; }
+      main { padding: 14px 16px 20px; }
+      .info-bar { font-size: 12px; flex-direction: column; align-items: flex-start; gap: 4px; }
+      .viewer-wrapper { min-height: 300px; border-radius: 10px; }
+      .btn { padding: 12px 18px; font-size: 13px; min-width: 120px; }
+      .btn-group { gap: 8px; }
+      .notice { font-size: 11px; padding: 6px 14px; }
+    }
+    @media (max-width: 460px) {
+      .btn-group { flex-direction: column; align-items: stretch; }
+      .btn { width: 100%; }
+    }
+
+    @media print {
+      header, .actions, .notice, .info-bar, .hint { display: none !important; }
+      main { padding: 0 !important; }
+      .viewer-wrapper { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+      #liveContent { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+        <path d="M15 2v5h5"/>
+      </svg>
+    </div>
+    PrintSafe
+  </div>
+  <span class="session-badge">🔒 temporary</span>
+  <div class="timer" id="headerTimer">--:--</div>
+</header>
+
+<main>
+  <section id="liveContent">
+    <div class="info-bar">
+      <div class="doc-meta">
+        <strong id="infoName">Document</strong>
+        <span class="sep">·</span>
+        <span id="infoPages">PDF</span>
+        <span class="sep">·</span>
+        <span id="infoExpiry">expires —</span>
+      </div>
+      <span style="font-size:12px; color:var(--soft);">⏳ session active</span>
+    </div>
+
+    <div class="viewer-wrapper" id="viewerWrapper">
+      <iframe id="pdfViewer" title="PDF preview" allow="fullscreen"></iframe>
+    </div>
+
+    <div class="actions">
+      <div class="btn-group">
+        <button class="btn btn-primary" id="downloadPdfBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download PDF
+        </button>
+      </div>
+      <div class="hint">Download saves the original PDF · auto‑deletion after expiry</div>
+      <div class="notice">🖨️ This is the original PDF. Preview uses full‑page rendering.</div>
+    </div>
+  </section>
+
+  <section class="status" id="notFoundScreen">
+    <div class="status-box">
+      <h2>🔗 Link not found</h2>
+      <p>This print link does not exist or has been removed.</p>
+    </div>
+  </section>
+  <section class="status" id="revokedScreen">
+    <div class="status-box">
+      <h2>⛔ Link revoked</h2>
+      <p>The sender revoked this temporary print session.</p>
+    </div>
+  </section>
+  <section class="status" id="expiredScreen">
+    <div class="status-box">
+      <h2>⏰ Session expired</h2>
+      <p>The time limit has passed, so printing is no longer available.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ==================== CONFIGURATION ====================
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : 'https://your-backend.onrender.com/api';
+
+// ==================== HELPERS ====================
+const $ = (s) => document.querySelector(s);
+
+function showToast(message, type = 'default') {
+    const existing = document.querySelector('.toast-print');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-print';
+    if (type === 'success') toast.classList.add('success');
+    if (type === 'error') toast.classList.add('error');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 220ms ease forwards';
+        setTimeout(() => toast.remove(), 220);
+    }, 3000);
+}
+
+function showScreen(id) {
+    ['liveContent','notFoundScreen','revokedScreen','expiredScreen'].forEach(x => {
+        const el = $('#' + x);
+        if (el) el.classList.remove('show');
+    });
+    const target = $('#' + id);
+    if (target) target.classList.add('show');
+}
+
+// ==================== API CLIENT ====================
+async function apiFetch(endpoint, options = {}) {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        },
+        credentials: 'include'
+    });
+    if (!response.ok) {
+        let errorMessage = 'API request failed';
+        try {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+        } catch (e) {}
+        throw new Error(errorMessage);
+    }
+    return response.json();
+}
+
+// ==================== STATE ====================
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+let linkData = null;
+let docData = null;
+let timerId = null;
+
+// ==================== LOAD PRINT LINK ====================
+async function loadPrintLink() {
+    if (!token) {
+        showScreen('notFoundScreen');
+        return;
+    }
+
+    try {
+        const data = await apiFetch(`/print/${token}`);
+        linkData = data.link;
+        docData = data.document;
+        
+        if (linkData.revoked) {
+            showScreen('revokedScreen');
+            return;
+        }
+        
+        const expiresAt = new Date(linkData.expires_at);
+        if (expiresAt < new Date()) {
+            showScreen('expiredScreen');
+            return;
+        }
+        
+        showScreen('liveContent');
+        
+        // Update info
+        $('#infoName').textContent = linkData.doc_name || 'Document';
+        $('#infoPages').textContent = 'PDF · ' + (docData.size ? Math.round(docData.size / 1024) + ' KB' : '—');
+        $('#infoExpiry').textContent = 'expires ' + expiresAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Load PDF
+        loadPdf();
+        
+        // Start timer
+        timerId = setInterval(updateSession, 1000);
+        updateSession();
+        
+        // Download handler
+        $('#downloadPdfBtn').addEventListener('click', downloadPdf);
+        
+    } catch (error) {
+        console.error('Error loading print link:', error);
+        if (error.message.includes('403')) {
+            showScreen('revokedScreen');
+        } else if (error.message.includes('410')) {
+            showScreen('expiredScreen');
+        } else {
+            showScreen('notFoundScreen');
+        }
+    }
+}
+
+// ==================== LOAD PDF ====================
+function loadPdf() {
+    const frame = $('#pdfViewer');
+    const wrapper = $('#viewerWrapper');
+    
+    // Use the file URL from the document
+    if (docData && docData.file_url) {
+        // Add PDF viewer parameters
+        const pdfUrl = docData.file_url + '#toolbar=0&navpanes=0&scrollbar=0';
+        frame.src = pdfUrl;
+        frame.style.display = 'block';
+    } else {
+        // Fallback: try to get the file through the print endpoint
+        fetch(`${API_URL}/print/${token}/file`)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load PDF');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                frame.src = url + '#toolbar=0&navpanes=0&scrollbar=0';
+                frame.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading PDF:', error);
+                wrapper.innerHTML = `
+                    <div class="viewer-placeholder">
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M12 18v-4" />
+                            <path d="M8 14v4" />
+                            <path d="M16 14v4" />
+                        </svg>
+                        <strong style="margin-bottom:4px;">PDF Preview Unavailable</strong>
+                        <p style="margin:0; font-size:14px;">Use the download button to get the original file.</p>
+                    </div>
+                `;
+                frame.style.display = 'none';
+            });
+    }
+}
+
+// ==================== UPDATE SESSION ====================
+function updateSession() {
+    if (!linkData) return;
+    const expiresAt = new Date(linkData.expires_at);
+    const remaining = expiresAt - new Date();
+    
+    if (remaining <= 0) {
+        cleanup();
+        showScreen('expiredScreen');
+        return;
+    }
+    
+    const min = Math.floor(remaining / 60000);
+    const sec = Math.floor((remaining % 60000) / 1000);
+    const timerEl = $('#headerTimer');
+    timerEl.textContent = String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    timerEl.classList.toggle('warning', remaining < 60000);
+}
+
+// ==================== DOWNLOAD PDF ====================
+async function downloadPdf() {
+    const btn = $('#downloadPdfBtn');
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 4v8l3 3"/>
+        </svg> Downloading...
+    `;
+    
+    try {
+        // Record print event
+        try {
+            await apiFetch(`/print/${token}/event`, { method: 'POST' });
+        } catch (e) {}
+        
+        // Download the file
+        const response = await fetch(`${API_URL}/print/${token}/file`);
+        if (!response.ok) throw new Error('Download failed');
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = linkData.doc_name || 'document.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast('✅ PDF downloaded successfully.', 'success');
+    } catch (error) {
+        console.error('Download error:', error);
+        showToast('❌ Download failed. Please try again.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download PDF
+    `;
+}
+
+// ==================== CLEANUP ====================
+function cleanup() {
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+}
+
+window.addEventListener('beforeunload', cleanup);
+
+// ==================== INIT ====================
+loadPrintLink();
+</script>
+</body>
+</html>
